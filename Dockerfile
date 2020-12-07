@@ -1,18 +1,22 @@
-#Download base image ubuntu 16.10
-FROM ubuntu:16.10
+#Download base image ubuntu latest
+FROM ubuntu:latest
 
-# update Ubuntu Software repository
-RUN apt-get update
+ENV DEBIAN_FRONTEND=noninteractive
 
-# installing command line tools
-RUN apt-get -y install nano less git python3 python3-pip
+WORKDIR /usr/src/doorstop
 
-WORKDIR /app
-RUN git clone https://github.com/jacebrowning/doorstop.git
+COPY requirements.txt .
 
-WORKDIR /app/doorstop
-RUN python3 setup.py install
+# Install required packages
+RUN apt-get update \
+  && apt-get install -y python3-pip python3-dev git \
+  && cd /usr/local/bin \
+  && ln -s /usr/bin/python3 python \
+  && pip3 --no-cache-dir install --upgrade pip \
+  && rm -rf /var/lib/apt/lists/* \
+  && cd /usr/src/doorstop \
+  && pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /data
+WORKDIR /usr/src/doorstop/data
 
 ENTRYPOINT /bin/bash
